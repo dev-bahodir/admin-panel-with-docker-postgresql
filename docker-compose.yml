@@ -1,0 +1,38 @@
+services:
+  app:
+    user: "1000:1000"
+    build:
+      context: ./docker/php
+    container_name: laravel-app
+    working_dir: /var/www
+    volumes:
+      - ./src:/var/www
+    depends_on:
+      - pgsql
+
+  nginx:
+    build:
+      context: ./docker/nginx
+    container_name: laravel-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www
+    depends_on:
+      - app
+
+  pgsql:
+    image: postgres:15
+    container_name: laravel-pgsql
+    environment:
+      POSTGRES_USER: bahodir
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: laraveldb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./conf/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  pgdata:
